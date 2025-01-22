@@ -1,0 +1,13 @@
+{
+  "name": "myviconcierge-theme",
+  "packageManager": "yarn@4.5.3",
+  "devDependencies": {
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.4.49",
+    "postcss-cli": "^11.0.0",
+    "tailwindcss": "^3.4.17"
+  },
+  "scripts": {
+    "build:css": "postcss css/libs/tailwind/imports.css -o css/libs/tailwind/styles.css"
+  }
+}

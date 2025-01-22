@@ -1,0 +1,397 @@
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background-color: #2e3b4e;
+    --text-color: #ffffff;
+    --text-color-invert: #333333;
+    --text-dark: #333333;
+    --text-light: #ffffff;
+    --link-color: #b2e1f5;
+
+    --background-noise: url("../images/bg.png");
+    --foreground-color: rgb(229 231 235 / var(--tw-text-opacity, 1));
+
+    /* Default background for restaurant, beach, and resort */
+    --rnr-profile-background: rgba(14, 6, 17, .1);
+    /* Restaurant profile background */
+    --r-profile-background: rgba(107, 114, 128, var(--tw-bg-opacity));
+    /* Beach profile background */
+    --b-profile-background: rgba(107, 114, 128, var(--tw-bg-opacity));
+    /* Resort and hotel profile background */
+    --rh-profile-background: rgba(107, 114, 128, var(--tw-bg-opacity));
+    /* Profile unavailable feature */
+    --profile-unavailable: rgb(107, 114, 128);
+    /* Profile available feature */
+    --profile-yes: rgb(4, 120, 87);
+    /* Profile price*/
+    --profile-cost: rgb(185, 28, 28);
+    /* Breakfast color */
+    --meal-breakfast: #e2a735;
+    /* Brunch color */
+    --meal-brunch: #ce8e72;
+    /* Dinner color */
+    --meal-dinner: #825a3c;
+    /* Day of the week color */
+    --week-day: #0065a1;
+    /* Business hour status: OPEN */
+    --bh-status-open: #2ea621;
+    /* Business hour status: CLOSE */
+    --bh-status-close: #e52541;
+    /* Business hour status: Opening in... */
+    --bh-status-opening: #37564a;
+    /* Business hour status: Closing in... */
+    --bh-status-closing: #e56925;
+  }
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    --background-color: #ffffff;
+    --text-color: #333333;
+    --text-color-invert: #ffffff;
+    --text-dark: #333333;
+    --text-light: #ffffff;
+    --link-color: #1a73e8;
+
+    --background-noise: url("../images/bg-light.png");
+    --foreground-color: #333333;
+
+    --rnr-profile-background: rgba(14, 6, 17, .1);
+    --profile-unavailable: rgb(107, 114, 128);
+    --profile-yes: rgb(4, 120, 87);
+    --profile-cost: rgb(185, 28, 28);
+    --meal-breakfast: #e2a735;
+    --meal-brunch: #ce8e72;
+    --meal-dinner: #825a3c;
+    --week-day: #0065a1;
+    --bs-status-open: #2ea621;
+    --bh-status-close: #e52541;
+    --bh-status-opening: #37564a;
+    --bh-status-closing: #e56925;
+  }
+}
+
+html, body {
+  height: 100%;
+}
+
+body {
+  font-family: 'Kanit', sans-serif;
+  background-color: var(--background-color);
+  color: var(--text-color);
+  position: relative;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: "Open Sans","Segoe UI","Helvetica", sans-serif;
+}
+
+a {
+  color: var(--link-color);
+}
+
+nav a {
+  color: #fff;
+}
+
+footer {
+  margin-top: 1rem;
+}
+
+/*
+ ******************************************************************************
+ Legacy CSS
+ *****************************************************************************/
+
+.articulated {
+  background-image: url("../images/transback.png");
+  border-radius: 15px;
+  max-height: calc(100vh - 50px);
+  padding: .5rem .5rem 3rem .5rem;
+}
+
+.content-scrollable {
+  flex: 1;
+  background-image: var(--background-noise);
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
+  color: var(--foreground-color);
+}
+
+.close-button {
+  background: linear-gradient(to bottom, #63b8ee 5%, #468ccf 100%);
+  box-shadow: inset 0 1px 0 0 #bee2f9;
+  background-color: #63b8ee;
+  border: 1px solid #3866a3;
+  text-shadow:1px 1px 0px #446485;
+  font-size: 1rem;
+  line-height: 0.5rem;
+}
+
+.close-button:hover  {
+  background: linear-gradient(to bottom, #468ccf 5%, #63b8ee 100%);
+  background-color:#468ccf;
+}
+
+.close-button:active  {
+  position:relative;
+  top:1px;
+}
+
+.nav-link-bold-shadow {
+  text-shadow: 0px 1px 4px rgba(0, 0, 0, 0.7);
+  font-weight: bold;
+}
+
+.map-panel {
+  top: 45px;
+  right: 20px;
+  padding: 10px;
+  z-index: 1;
+  background-image: url("../images/transback.png");
+  line-height: 22px;
+  min-width: 50px;
+  min-height: 38px;
+  max-height: calc(100vh - 80px);
+}
+
+.map-panel-header {
+  position: absolute;
+  top: 7px;
+  right: 10px;
+}
+
+.map-panel-scrollable {
+  flex: 1;
+  background-image: var(--background-noise);
+  margin-top: 25px;
+  padding: .5em;
+  overflow-y: auto;
+  max-width: 300px;
+  min-width: 250px;
+  border-bottom-left-radius: 12px;
+  border-bottom-right-radius: 12px;
+  color: var(--foreground-color);
+}
+
+.switch-div {
+  width: 100%;
+  text-align: right;
+}
+
+.switch-div a {
+  color: #f8f5ef;
+}
+
+.switch-div a:hover,
+.switch-div a:focus {
+  text-decoration: none;
+}
+
+.mvic-ui-wrap-button,
+.mvic-ui-wrap-link {
+  text-align:center;
+}
+
+.mvic-ui-wrap-link a {
+  color: var(--link-color);
+}
+
+/******************************************************************************
+ Theme Color CSS
+ ******************************************************************************/
+
+main.light {
+  --background-noise: url("../images/bg-light.png");
+  --link-color: #1a73e8;
+  --foreground-color: #333333;
+  --rnr-profile-background: rgba(14, 6, 17, .1);
+  --profile-unavailable: rgb(107, 114, 128);
+  --profile-yes: rgb(4, 120, 87);
+  --profile-cost: rgb(185, 28, 28);
+  --meal-breakfast: #e2a735;
+  --meal-brunch: #ce8e72;
+  --meal-dinner: #825a3c;
+  --week-day: #0065a1;
+  --bh-status-open: #2ea621;
+  --bh-status-close: #e52541;
+  --bh-status-opening: #37564a;
+  --bh-status-closing: #e56925;
+}
+
+main.dark {
+  --foreground-color: rgb(229 231 235 / var(--tw-text-opacity, 1));
+  --link-color: #b2e1f5;
+  --background-noise: url("../images/bg.png");
+  --rnr-profile-background: rgba(14, 6, 17, .1);
+  --profile-unavailable: rgb(107, 114, 128);
+  --profile-yes: rgb(4, 120, 87);
+  --profile-cost: rgb(185, 28, 28);
+  --meal-breakfast: #e2a735;
+  --meal-brunch: #ce8e72;
+  --meal-dinner: #825a3c;
+  --week-day: #0065a1;
+  --bh-status-open: #2ea621;
+  --bh-status-close: #e52541;
+  --bh-status-opening: #37564a;
+  --bh-status-closing: #e56925;
+}
+
+.themed-profile-unavailable {
+  color: var(--profile-unavailable);
+}
+
+.themed-profile-yes {
+  color: var(--profile-yes);
+  font-weight: bold;
+}
+
+.themed-bh-close,
+.themed-profile-cost {
+  color: var(--profile-cost);
+  font-weight: bold;
+}
+
+.themed-meal-breakfast {
+  background-color: var(--meal-breakfast);
+  color: #333333;
+}
+
+.themed-meal-brunch {
+  background-color: var(--meal-brunch);
+  color: #ffffff;
+}
+
+.themed-meal-dinner {
+  background-color: var(--meal-dinner);
+  color: #ffffff;
+}
+
+.themed-weekday {
+  color: var(--week-day);
+  font-weight: bold;
+}
+
+.themed-bh-status-open {
+  border: solid 1px var(--bh-status-open);
+  border-radius: .5rem;
+  padding: 0 1rem;
+  background-color: var(--bh-status-open);
+  color: var(--text-light);
+}
+
+.themed-bh-status-close {
+  border: solid 1px var(--bh-status-close);
+  border-radius: .5rem;
+  padding: 0 1rem;
+  background-color: var(--bh-status-close);
+  color: var(--text-light);
+}
+
+.themed-bh-status-opening {
+  border: solid 1px var(--bh-status-opening);
+  border-radius: .5rem;
+  padding: 0 1rem;
+  background-color: var(--bh-status-opening);
+  color: var(--text-light);
+}
+
+.themed-bh-status-closing {
+  border: solid 1px var(--bh-status-closing);
+  border-radius: .5rem;
+  padding: 0 1rem;
+  background-color: var(--bh-status-closing);
+  color: var(--text-light);
+}
+
+/******************************************************************************
+ Information Menu CSS
+ ******************************************************************************/
+
+.information-menu-text-shadow {
+  text-shadow: 0px 0px 20px #000,
+                0px 0px 20px #000,
+                0px 0px 20px #000,
+                0px 0px 20px #000,
+                0px 0px 20px #000;
+}
+
+/******************************************************************************
+ Template CSS
+ *****************************************************************************/
+
+p.comment-form-comment {
+  margin-top: 1rem;
+}
+
+p.comment-form-comment label {
+  display: block;
+}
+
+.required-field-message {
+  font-style: italic;
+}
+
+#comment {
+  padding: .25rem .5rem;
+}
+
+#main.overlay-active {
+  max-height: calc(100vh - 82px);
+}
+
+html.overlay-active,
+body.overlay-active {
+  max-height: calc(100vh - 32px);
+}
+
+.mvic-map-canvas {
+  background-color: #9fc5e8;
+}
+
+.profile-title {
+  font-size: 1.3rem;
+  color: var(--foreground-color);
+  margin: 1rem 0;
+  letter-spacing: 0.05em;
+  line-height: 1.2;
+  text-align: center;
+}
+
+.profile,
+.restaurant-profile,
+.beach-profile,
+.resort-profile {
+  float: left;
+  margin: 0 1rem 1rem 1rem;
+  padding: .5rem;
+  background-color: var(--rnr-profile-background);
+  /* font-family: Roboto, Tahoma, Verdana, Helvetica, Arial, sans-serif; */
+  font-weight: 100;
+  max-width: 20rem;
+}
+
+.meal {
+  font-size: .75rem;
+  text-transform: uppercase;
+  font-weight: bold;
+  letter-spacing: 1px;
+  padding: 0 5px;
+  border-radius: 10px;
+}
+
+@media (max-width: 768px) {
+  .profile,
+  .restaurant-profile,
+  .beach-profile,
+  .restort-profile {
+    float: none;
+    margin: 1rem auto;
+  }
+}
+
+.profile ul li,
+.restaurant-profile ul li,
+.beach-profile ul li,
+.resort-profile ul li {
+  margin-bottom: .25rem;
+}
