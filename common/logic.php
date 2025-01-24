@@ -79,6 +79,10 @@ function short_day($day) {
  * Set the missing day as "Close" by setting 'open' and 'close' as empty string.
  */
 function fill_missing_days($hours) {
+  if (!is_array($hours)) {
+    return array();
+  }
+
   $all_days = [
     'sunday' => array(),
     'monday' => array(),
@@ -95,7 +99,7 @@ function fill_missing_days($hours) {
 
   foreach ($all_days as $day => $day_hours) {
     if (empty($day_hours)) {
-      $filled_hours[] = ['day' => ucfirst($day), 'open' => '', 'close' => '', 'meal' => 'Close'];
+      $filled_hours[] = ['day' => $day, 'open' => '', 'close' => '', 'meal' => 'Close'];
     } else {
       foreach ($day_hours as $hour) {
         $filled_hours[] = $hour;
@@ -104,4 +108,13 @@ function fill_missing_days($hours) {
   }
 
   return $filled_hours;
+}
+
+/**
+ * Get custom post map icon.
+ */
+function map_icon() {
+  $icon_url = get_post_meta(get_the_ID(), '_mvic_icon_url', true);
+
+  return '<img src="' . esc_url($icon_url) . '" alt="Map icon" />';
 }

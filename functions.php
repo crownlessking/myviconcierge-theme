@@ -1,5 +1,7 @@
 <?php
 
+require_once plugin_dir_path(__FILE__) . '/common/logic.php';
+
 /*****************************************************************************
  * WORDPRESS THEME SETUP
  *****************************************************************************/
@@ -60,6 +62,14 @@ function mvic_load_js() {
     true
   );
   wp_enqueue_script('main');
+
+  // Localize the script with business hours data
+  if (is_single() && get_post_type() == 'restaurant') {
+    $business_hours = fill_missing_days(
+      get_post_meta(get_the_ID(), '_restaurant_business_hours_meta_key', true)
+    );
+    wp_localize_script('main', 'businessHours', $business_hours);
+  }
 }
 add_action('wp_enqueue_scripts', 'mvic_load_js');
 

@@ -273,32 +273,24 @@ main.dark {
 
 .themed-bh-status-open {
   border: solid 1px var(--bh-status-open);
-  border-radius: .5rem;
-  padding: 0 1rem;
   background-color: var(--bh-status-open);
   color: var(--text-light);
 }
 
-.themed-bh-status-close {
+.themed-bh-status-closed {
   border: solid 1px var(--bh-status-close);
-  border-radius: .5rem;
-  padding: 0 1rem;
   background-color: var(--bh-status-close);
   color: var(--text-light);
 }
 
 .themed-bh-status-opening {
   border: solid 1px var(--bh-status-opening);
-  border-radius: .5rem;
-  padding: 0 1rem;
   background-color: var(--bh-status-opening);
   color: var(--text-light);
 }
 
 .themed-bh-status-closing {
   border: solid 1px var(--bh-status-closing);
-  border-radius: .5rem;
-  padding: 0 1rem;
   background-color: var(--bh-status-closing);
   color: var(--text-light);
 }
@@ -361,12 +353,12 @@ body.overlay-active {
 .restaurant-profile,
 .beach-profile,
 .resort-profile {
-  float: left;
-  margin: 0 1rem 1rem 1rem;
+  /* float: left; */
   padding: .5rem;
   background-color: var(--rnr-profile-background);
   /* font-family: Roboto, Tahoma, Verdana, Helvetica, Arial, sans-serif; */
   font-weight: 100;
+  min-width: 15rem;
   max-width: 20rem;
 }
 
@@ -377,6 +369,13 @@ body.overlay-active {
   letter-spacing: 1px;
   padding: 0 5px;
   border-radius: 10px;
+}
+
+.status {
+  border-radius: .9rem;
+  padding: 0 .75rem;
+  font-size: 1.2rem;
+  text-transform: uppercase;
 }
 
 @media (max-width: 768px) {

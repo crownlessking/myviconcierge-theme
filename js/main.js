@@ -153,6 +153,124 @@
     mvic_toggle_panel();
   }
 
+  /**
+   * Indicate whether the restaurant is currently close, open, or
+   * is about to be open or close in less than 30 minutes.
+   */
+  function getRestaurantStatus(businessHours = []) {
+    const now = new Date();
+    const currentDay = now.toLocaleString('en-US', { weekday: 'long' });
+    const todayHours = businessHours.find(day => day.day === currentDay.toLowerCase());console.log('todayHours', todayHours);
+    const previousDayName = new Date(now.setDate(now.getDate() - 1)).toLocaleString('en-US', { weekday: 'long' }).toLowerCase();
+    const previousDayHours = businessHours.find(day => day.day === previousDayName);console.log('previousDayHours', previousDayHours);
+
+    if ((!previousDayHours || !previousDayHours.open || !previousDayHours.close)
+      && (!todayHours || !todayHours.open || !todayHours.close)
+    ) {
+      return {
+        status: 'closed',
+        className: 'status themed-bh-status-closed'
+      };
+    }
+  
+    const statusObj = getBhStatusMsg(previousDayHours, todayHours);
+
+    return statusObj;
+  }
+
+  /** Get business hours status message */
+  function getBhStatusMsg(previousDay, today) {
+    const now = new Date();
+    const previousDayClose = parseTime(previousDay.close);
+    const todayOpen = parseTime(today.open);
+    const todayClose = parseTime(today.close);
+    const currentTime = now.getHours() * 60 + now.getMinutes();
+    const previousDayOpen = parseTime(previousDay.open);
+    const $12am = parseTime('24:00');
+
+    // UNUSUAL SCHEDULE
+    if (!isNaN(todayOpen) && !isNaN(todayClose) && todayOpen > todayClose) {
+
+      // currently close but will open eventually
+      if (todayOpen > currentTime) {
+        return bhStatus('opening', todayOpen - currentTime);
+
+      // currently open
+      } else if (todayOpen < currentTime && currentTime < $12am) {
+        return bhStatus('open');
+      }
+    }
+
+    // UNUSUAL SCHEDULE (open from previous day)
+    else if (!isNaN(previousDayOpen)
+      && !isNaN(previousDayClose)
+      && previousDayOpen > previousDayClose
+      && currentTime < previousDayClose
+    ) {
+      return bhStatus('closing', previousDayClose - currentTime);
+
+    // NORMAL SCHEDULE
+    } else if (todayOpen < todayClose) {
+
+      // currently closed but will open eventually
+      if (currentTime < todayOpen) {
+        return bhStatus('opening', todayOpen - currentTime);
+
+      // currently open but will close eventually
+      } else if (todayOpen < currentTime && currentTime < todayClose) { 
+        return bhStatus('open', todayClose - currentTime);
+      }
+    } else {
+      return {
+        status: 'closed',
+        className: 'status themed-bh-status-closed'
+      };
+    }
+  }
+
+  /**
+   * Convert 24h time format to the integer equivalent for computing purposes.
+   */
+  function parseTime(timeStr) {
+    const [hours, minutes] = timeStr.split(':').map(Number);
+    return hours * 60 + minutes;
+  }
+
+  /** Get status object. */
+  function bhStatus(type, timeLeft = 31) {
+    switch (type) {
+      case 'opening':
+        if (timeLeft > 30) { break; }
+        if (0 < timeLeft && timeLeft <= 30) {
+          return {
+            status: `opening in ${timeLeft}`,
+            className: 'status themed-bh-status-opening'
+          };
+        }
+      case 'open':
+        if (timeLeft > 30) {
+          return {
+            status: 'open',
+            className: 'status themed-bh-status-open'
+          };
+        }
+      case 'closing':
+        if (0 < timeLeft && timeLeft <= 30) {
+          return {
+            status: `closing in ${timeLeft} minute(s)`,
+            className: 'status themed-bh-status-closing'
+          };
+        }
+      default:
+      case 'closed':
+    }
+    return {
+      status: 'closed',
+      className: 'status themed-bh-status-closed'
+    };
+  }
+
+  // Toggle navigation links in mobile view
   document.getElementById('navbar-toggler').addEventListener('click', function() {
     var collapse = document.getElementById('navbar-collapse');
     collapse.classList.toggle('hidden');
@@ -160,8 +278,7 @@
 
   // Prevents website layout from breaking if the wordpress admin bar is displayed.
   document.addEventListener('DOMContentLoaded', function() {
-    if (document.getElementById('wpadminbar')) { // is admin bar visible
-      console.log('Admin bar is visible');
+    if (document.getElementById('wpadminbar')) { // if admin bar visible
       // Trigger your JavaScript functions here
       document.getElementById('main').classList.add('overlay-active');
       document.getElementsByTagName('body')[0].classList.add('overlay-active');
@@ -174,74 +291,16 @@
     }
   });
 
-  /**
-   * On the restaurant page, make the restaurant data available as an object. e.g.
-   * 
-   * ```js
-   * const restaurantData = {
-   *   name: <restaurant_name>,
-   *   businessHours: [
-   *     { day: Sun, open: '', close: '', meal: '' }
-   *   ]
-   * }
-   * ```
-   * 
-   * Use that data to indicate whether the restaurant is currently close, open, or
-   * is about to be open or close in less than 30 minutes.
-   */
-  function getRestaurantStatus(restaurantData) {
-    const now = new Date();
-    const currentDay = now.toLocaleString('en-US', { weekday: 'short' });
-    const currentTime = now.getHours() * 60 + now.getMinutes();
-
-    const todayHours = restaurantData.businessHours.find(day => day.day === currentDay);
-
-    if (!todayHours || !todayHours.open || !todayHours.close) {
-      return 'closed';
-    }
-
-    const openTime = parseTime(todayHours.open);
-    const closeTime = parseTime(todayHours.close);
-
-    if (currentTime < openTime) {
-      return 'closed';
-    } else if (currentTime >= openTime && currentTime < closeTime) {
-      if (closeTime - currentTime <= 30) {
-        return 'closing soon';
-      }
-      switch (todayHours.meal) {
-        case 'Breakfast':
-          return 'open for breakfast';
-        case 'Brunch':
-          return 'open for brunch';
-        case 'Dinner':
-          return 'open for dinner';
-        default:
-          return 'open';
-      }
-    } else if (openTime - currentTime <= 30) {
-      return 'opening soon';
-    } else if (currentTime >= closeTime && currentTime < closeTime + 30) {
-      return 'just closed';
+  // Displays business hours status on restaurant page
+  document.addEventListener('DOMContentLoaded', function() {
+    if (typeof businessHours !== 'undefined') {
+      const statusElement = document.getElementById('bh-status');
+      const statusObj = getRestaurantStatus(businessHours);
+      statusElement.textContent = statusObj.status;
+      statusElement.className = statusObj.className;
     } else {
-      return 'closed';
+      console.error('businessHours is not defined');
     }
-  }
+  });
 
-  function parseTime(timeStr) {
-    const [hours, minutes] = timeStr.split(':').map(Number);
-    return hours * 60 + minutes;
-  }
-
-  // Example usage:
-  const restaurantData = {
-    name: 'Example Restaurant',
-    businessHours: [
-      { day: 'Sun', open: '10:00', close: '22:00', meal: 'Lunch' },
-      { day: 'Mon', open: '10:00', close: '22:00', meal: 'Lunch' },
-      // Add other days as needed
-    ]
-  };
-
-  console.log(getRestaurantStatus(restaurantData));
 })();
