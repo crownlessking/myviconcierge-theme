@@ -27,7 +27,7 @@ while ( have_posts() ) :
           <?php endif; ?>
         </aside><!-- .entry-sidebar -->
     
-        <div>
+        <div class="article-text">
           <?php the_content(); ?><!-- .entry-content -->
   
           <footer class="entry-footer">

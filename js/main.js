@@ -160,9 +160,9 @@
   function getRestaurantStatus(businessHours = []) {
     const now = new Date();
     const currentDay = now.toLocaleString('en-US', { weekday: 'long' });
-    const todayHours = businessHours.find(day => day.day === currentDay.toLowerCase());console.log('todayHours', todayHours);
+    const todayHours = businessHours.find(day => day.day === currentDay.toLowerCase());
     const previousDayName = new Date(now.setDate(now.getDate() - 1)).toLocaleString('en-US', { weekday: 'long' }).toLowerCase();
-    const previousDayHours = businessHours.find(day => day.day === previousDayName);console.log('previousDayHours', previousDayHours);
+    const previousDayHours = businessHours.find(day => day.day === previousDayName);
 
     if ((!previousDayHours || !previousDayHours.open || !previousDayHours.close)
       && (!todayHours || !todayHours.open || !todayHours.close)
@@ -199,6 +199,8 @@
       } else if (todayOpen < currentTime && currentTime < $12am) {
         return bhStatus('open');
       }
+
+      return bhStatus('closed');
     }
 
     // UNUSUAL SCHEDULE (open from previous day)
@@ -220,6 +222,8 @@
       } else if (todayOpen < currentTime && currentTime < todayClose) { 
         return bhStatus('open', todayClose - currentTime);
       }
+
+      return bhStatus('closed');
     } else {
       return {
         status: 'closed',
@@ -273,8 +277,27 @@
   // Toggle navigation links in mobile view
   document.getElementById('navbar-toggler').addEventListener('click', function() {
     var collapse = document.getElementById('navbar-collapse');
-    collapse.classList.toggle('hidden');
-  });  
+    const toggledClass = 'navbar-show';
+    const main = document.getElementById('main');
+
+    if (collapse.classList.contains('hidden')) {
+      collapse.classList.remove('hidden');
+
+      // Force reflow to ensure the transition happens
+      void collapse.offsetWidth;
+      void main.offsetWidth;
+
+      collapse.classList.add('show');
+      main.classList.add(toggledClass);
+    } else {
+      collapse.classList.remove('show');
+      // Wait for the transition to complete before adding the hidden class
+      collapse.addEventListener('transitionend', function() {
+        collapse.classList.add('hidden');
+        main.classList.remove(toggledClass);
+      }, { once: true });
+    }
+  });
 
   // Prevents website layout from breaking if the wordpress admin bar is displayed.
   document.addEventListener('DOMContentLoaded', function() {

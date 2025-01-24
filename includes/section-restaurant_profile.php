@@ -6,6 +6,7 @@
       ?>
         <?php
         $phone = get_post_meta(get_the_ID(), '_restaurant_phone_meta_key', true);
+        $address = get_post_meta(get_the_ID(), '_restaurant_address_meta_key', true);
         $website = get_post_meta(get_the_ID(), '_restaurant_website_meta_key', true);
         $cuisine = get_post_meta(get_the_ID(), '_restaurant_cuisine_meta_key', true);
         $costLow = get_post_meta(get_the_ID(), '_restaurant_cost_low_meta_key', true);
@@ -20,6 +21,9 @@
         <ul>
           <?php if (!empty($phone)) : ?>
             <li><i class="fa-solid fa-phone"></i> Phone: <span class="font-bold"><a href="tel:<?= esc_html($phone); ?>"><?= esc_html($phone); ?></a></span></li>
+          <?php endif; ?>
+          <?php if (!empty($address)) : ?>
+            <li class="r-address"><i class="fa-solid fa-location-dot"></i> Address: <span class="font-bold"><?= wpautop(esc_html($address)); ?></span></li>
           <?php endif; ?>
           <?php if (!empty($website)) : ?>
             <li><i class="fa-solid fa-earth-americas"></i> <a href="<?= esc_url($website); ?>">Website</a></li>
