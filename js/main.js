@@ -153,83 +153,72 @@
     mvic_toggle_panel();
   }
 
-  /**
-   * Indicate whether the restaurant is currently close, open, or
-   * is about to be open or close in less than 30 minutes.
+   /**
+   * Get restaurant business hours status.
    */
-  function getRestaurantStatus(businessHours = []) {
+   function getRestaurantBusinessHoursStatus(businessHours = []) {
     const now = new Date();
     const currentDay = now.toLocaleString('en-US', { weekday: 'long' });
-    const todayHours = businessHours.find(day => day.day === currentDay.toLowerCase());
-    const previousDayName = new Date(now.setDate(now.getDate() - 1)).toLocaleString('en-US', { weekday: 'long' }).toLowerCase();
-    const previousDayHours = businessHours.find(day => day.day === previousDayName);
+    const dayInt = now.getDay();
+    const currentTime = now.getHours() * 60 + now.getMinutes();
+    const accCurrentTime = 1440 * now.getDay() + currentTime;
+    let status = bhStatus('close');
+    let unAccClose = 0; // unusual schedule, small hours of the morning close.
+    let unDayInt = -1; // unusual schedule day as an integer.
 
-    if ((!previousDayHours || !previousDayHours.open || !previousDayHours.close)
-      && (!todayHours || !todayHours.open || !todayHours.close)
-    ) {
-      return {
-        status: 'closed',
-        className: 'status themed-bh-status-closed'
-      };
+    for (let i = 0; i < businessHours.length; i++) {
+      const hours = businessHours[i];
+      const dayIndex = getDayInt(hours.day);
+
+      // unusual schedule from the previous day, usually.
+      if (0 <= unDayInt && unDayInt === dayIndex && accCurrentTime < unAccClose) {
+        status = bhStatus('open', unAccClose - accCurrentTime);
+        break;
+      }
+
+      if (hours.day === currentDay.toLowerCase()) {
+        if (hours.open) {
+          const open = parseTime(hours.open);
+          const accOpen = 1440 * dayInt + open;
+          if (accCurrentTime < accOpen) {
+            status = bhStatus('opening', accOpen - accCurrentTime);
+            break;
+          }
+          if (hours.close) {
+            const close = parseTime(hours.close);
+            let accClose;
+            if (open < close) { // normal schedule
+              accClose = 1440 * dayInt + close;
+              if (accCurrentTime < accClose) {
+                status = bhStatus('open', accClose - accCurrentTime);
+                break;
+              }
+            } else { // unusual schedule
+              unDayInt = (dayInt + 1) % 7;
+              unAccClose = 1440 * unDayInt + close;
+              if (accCurrentTime < unAccClose) {
+                status = bhStatus('open', unAccClose - accCurrentTime);
+                break;
+              }
+            }
+          }
+        }
+      }
     }
-  
-    const statusObj = getBhStatusMsg(previousDayHours, todayHours);
-
-    return statusObj;
+    return status;
   }
 
-  /** Get business hours status message */
-  function getBhStatusMsg(previousDay, today) {
-    const now = new Date();
-    const previousDayClose = parseTime(previousDay.close);
-    const todayOpen = parseTime(today.open);
-    const todayClose = parseTime(today.close);
-    const currentTime = now.getHours() * 60 + now.getMinutes();
-    const previousDayOpen = parseTime(previousDay.open);
-    const $12am = parseTime('24:00');
-
-    // UNUSUAL SCHEDULE
-    if (!isNaN(todayOpen) && !isNaN(todayClose) && todayOpen > todayClose) {
-
-      // currently close but will open eventually
-      if (todayOpen > currentTime) {
-        return bhStatus('opening', todayOpen - currentTime);
-
-      // currently open
-      } else if (todayOpen < currentTime && currentTime < $12am) {
-        return bhStatus('open');
-      }
-
-      return bhStatus('closed');
-    }
-
-    // UNUSUAL SCHEDULE (open from previous day)
-    else if (!isNaN(previousDayOpen)
-      && !isNaN(previousDayClose)
-      && previousDayOpen > previousDayClose
-      && currentTime < previousDayClose
-    ) {
-      return bhStatus('closing', previousDayClose - currentTime);
-
-    // NORMAL SCHEDULE
-    } else if (todayOpen < todayClose) {
-
-      // currently closed but will open eventually
-      if (currentTime < todayOpen) {
-        return bhStatus('opening', todayOpen - currentTime);
-
-      // currently open but will close eventually
-      } else if (todayOpen < currentTime && currentTime < todayClose) { 
-        return bhStatus('open', todayClose - currentTime);
-      }
-
-      return bhStatus('closed');
-    } else {
-      return {
-        status: 'closed',
-        className: 'status themed-bh-status-closed'
-      };
-    }
+  /** Get day as an integer */
+  function getDayInt(day) {
+    return [
+      'sunday',
+      'monday',
+      'tuesday',
+      'wednesday',
+      'thursday',
+      'friday',
+      'saturday'
+    ].indexOf(day);
   }
 
   /**
@@ -240,7 +229,7 @@
     return hours * 60 + minutes;
   }
 
-  /** Get status object. */
+  /** Get restaurant business hours status object. */
   function bhStatus(type, timeLeft = 31) {
     switch (type) {
       case 'opening':
@@ -318,7 +307,7 @@
   document.addEventListener('DOMContentLoaded', function() {
     if (typeof businessHours !== 'undefined') {
       const statusElement = document.getElementById('bh-status');
-      const statusObj = getRestaurantStatus(businessHours);
+      const statusObj = getRestaurantBusinessHoursStatus(businessHours);
       statusElement.textContent = statusObj.status;
       statusElement.className = statusObj.className;
     } else {
