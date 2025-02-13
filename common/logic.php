@@ -10,7 +10,7 @@ function yes_class($val) {
   return $val ? 'class="themed-profile-yes"' : '';
 }
 
-/** Converts internal identifier to human readable */
+/** Converts internal identifier to human readable text. */
 function human_readable($identifier) {
   $identifier = str_replace(['-', '_'], ' ', esc_html($identifier));
   return ucwords($identifier);

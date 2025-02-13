@@ -1,21 +1,26 @@
 <?php
 
 require_once plugin_dir_path(__FILE__) . '/common/logic.php';
+require_once get_template_directory() . '/lib/class-wp-bootstrap-navwalker.php';
 
 /*****************************************************************************
  * WORDPRESS THEME SETUP
  *****************************************************************************/
 
-// AI said I needed this to ensure that WordPress properly generate the title for the webpage.
-add_theme_support('title-tag');
+if (function_exists('add_theme_support')) {
+  add_theme_support('title-tag'); // Needed to properly generate the title for the webpage.
+  add_theme_support('post-thumbnails');
+}
 
 function myvic_theme_setup() {
-  register_nav_menus(array( 'primary' => __('Primary Menu', 'my_theme'), ));
+  register_nav_menus(array(
+    'primary' => __('Primary Menu', 'myviconcierge-theme'),
+  ));
 }
 add_action('after_setup_theme', 'myvic_theme_setup');
 
 /** **************************************************************************
- * CSS IS IMPORTED IN THIS FUNCTION.
+ * CSS IMPORTS
  *************************************************************************** */
 function mvic_load_css() {
 
@@ -48,9 +53,10 @@ function mvic_load_css() {
 }
 add_action('wp_enqueue_scripts', 'mvic_load_css');
 
-/** **************************************************************************
- * JAVASCRIPT IS IMPORTED IN THIS FUNCTION.
- *************************************************************************** */
+/* ****************************************************************************
+ * JAVASCRIPT IMPORTS
+ *****************************************************************************/
+
 function mvic_load_js() {
   // Enqueue jQuery from WordPress core
   wp_enqueue_script('jquery');
@@ -91,36 +97,41 @@ function add_navbar_brand_class_to_custom_logo($html) {
 add_filter('get_custom_logo', 'add_navbar_brand_class_to_custom_logo');
 
 function mvic_theme_widgets_init() {
-    register_sidebar( array(
-        'name'          => __( 'Primary Sidebar', 'myviconcierge-theme' ),
-        'id'            => 'primary-sidebar',
-        'description'   => __( 'Main sidebar that appears on the right.', 'myviconcierge-theme' ),
-        'before_widget' => '<div id="%1$s" class="widget %2$s">',
-        'after_widget'  => '</div>',
-        'before_title'  => '<h2 class="widget-title">',
-        'after_title'   => '</h2>',
-    ) );
+  register_sidebar(array(
+    'name'          => __( 'Primary Sidebar', 'myviconcierge-theme' ),
+    'id'            => 'primary-sidebar',
+    'description'   => __( 'Main sidebar that appears on the right.', 'myviconcierge-theme' ),
+    'before_widget' => '<div id="%1$s" class="widget %2$s">',
+    'after_widget'  => '</div>',
+    'before_title'  => '<h2 class="widget-title">',
+    'after_title'   => '</h2>',
+  ));
 }
 add_action( 'widgets_init', 'mvic_theme_widgets_init' );
 
 /*****************************************************************************
- * THEME ADMIN MENU SETTING PAGE
+ * THEME ADMIN MENU SETTING PAGE - SETTING WEBSITE BACKGROUND IMAGE
  *****************************************************************************/
 
 // Hook into the admin menu action
 add_action('admin_menu', 'mvic_theme_settings_page');
 
+/**
+ * Add a new submenu under Appearance
+ */
 function mvic_theme_settings_page() {
-    // Add a new submenu under Appearance
-    add_theme_page(
-        'My VI Concierge Theme Settings',  // Page title
-        'Theme Settings',         // Menu title
-        'manage_options',         // Capability
-        'mvic-theme-settings',  // Menu slug
-        'mvic_theme_settings_callback' // Function to display page content
-    );
+  add_theme_page(
+    'My VI Concierge Theme Settings',  // Page title
+    'Theme Settings',         // Menu title
+    'manage_options',         // Capability
+    'mvic-theme-settings',  // Menu slug
+    'mvic_theme_settings_callback' // Function to display page content
+  );
 }
 
+/**
+ * Function to dsplay page content.
+ */
 function mvic_theme_settings_callback() {
   ?>
     <div class="wrap">
@@ -138,20 +149,29 @@ function mvic_theme_settings_callback() {
 }
 
 // Hook into the admin_init action
-add_action('admin_init', 'mvic_theme_settings_init');
+add_action('admin_init', 'mvic_plugin_theme_settings_init');
 
-function mvic_theme_settings_init() {
-  // Register a new setting
-  register_setting('mvic_theme_settings_group', 'background_image_urls'); 
+/**
+ * Function to hook into the admin_init action.
+ */
+function mvic_plugin_theme_settings_init() {
+  // Register background image setting
+  register_setting('mvic_theme_settings_group', 'background_image_urls');
 
-  // Add a new section to the settings page
+  // Register setting for the Google Maps API key
+  // The key will be stored in the WordPress options table and can be retrieved
+  // using get_option('google_maps_api_key').
+  register_setting('mvic_theme_settings_group', 'google_maps_api_key');
+
+  // Add a section to the settings page
   add_settings_section(
-      'mvic_theme_settings_section',  // Section ID
-      'Theme Options',           // Section title
-      'mvic_theme_settings_section_callback', // Callback function
-      'mvic-theme-settings'           // Page slug
+    'mvic_theme_settings_section',  // Section ID
+    'Theme Options',           // Section title
+    'mvic_plugin_theme_settings_section_callback', // Callback function
+    'mvic-theme-settings'           // Page slug
   );
 
+  // Settings field for background image URLs.
   add_settings_field(
     'background_image_urls',
     'Background Image URLs',
@@ -159,15 +179,31 @@ function mvic_theme_settings_init() {
     'mvic-theme-settings',
     'mvic_theme_settings_section'
   );
+
+  // Add settings field for the Google Maps API key
+  add_settings_field(
+    'google_maps_api_key',
+    'Google Maps API Key',
+    'mvic_plugin_google_maps_api_key_callback',
+    'mvic-theme-settings',
+    'mvic_theme_settings_section'
+  );
 }
 
-function mvic_theme_settings_section_callback() {
+function mvic_plugin_theme_settings_section_callback() {
   echo '<p>Customize your theme settings here.</p>';
 }
 
+/** Callback function to render the textarea to input background image URLs. */
 function mvic_background_image_urls_callback() {
     $urls = get_option('background_image_urls', '');
     echo '<textarea name="background_image_urls" rows="10" cols="50" class="large-text">' . esc_textarea($urls) . '</textarea>';
+}
+
+/** Callback function to render the Google Maps API key input field. */
+function mvic_plugin_google_maps_api_key_callback() {
+  $api_key = get_option('google_maps_api_key', '');
+  echo '<input type="text" name="google_maps_api_key" value="' . esc_attr($api_key) . '" class="regular-text">';
 }
 
 // Handle Ajax request

@@ -153,72 +153,97 @@
     mvic_toggle_panel();
   }
 
-   /**
+  /**
    * Get restaurant business hours status.
    */
-   function getRestaurantBusinessHoursStatus(businessHours = []) {
+  function getRestaurantBusinessHoursStatus(businessHours = []) {
     const now = new Date();
     const currentDay = now.toLocaleString('en-US', { weekday: 'long' });
-    const dayInt = now.getDay();
     const currentTime = now.getHours() * 60 + now.getMinutes();
     const accCurrentTime = 1440 * now.getDay() + currentTime;
-    let status = bhStatus('close');
-    let unAccClose = 0; // unusual schedule, small hours of the morning close.
-    let unDayInt = -1; // unusual schedule day as an integer.
+    let unusualHours = null;
+    let statusObj = getStatusObj('close');
 
     for (let i = 0; i < businessHours.length; i++) {
       const hours = businessHours[i];
-      const dayIndex = getDayInt(hours.day);
-
-      // unusual schedule from the previous day, usually.
-      if (0 <= unDayInt && unDayInt === dayIndex && accCurrentTime < unAccClose) {
-        status = bhStatus('open', unAccClose - accCurrentTime);
-        break;
-      }
 
       if (hours.day === currentDay.toLowerCase()) {
-        if (hours.open) {
-          const open = parseTime(hours.open);
-          const accOpen = 1440 * dayInt + open;
-          if (accCurrentTime < accOpen) {
-            status = bhStatus('opening', accOpen - accCurrentTime);
-            break;
+        if (unusualHours && unusualHours.day === getPreviousDay(hours.day)) {
+          statusObj = getUnusualStatusSelection(accCurrentTime, unusualHours);
+          break;
+        } else {
+          statusObj = getStatusSelection(accCurrentTime, hours);
+          break;
+        }
+      }
+
+      // Store current hours if they are unusual.
+      if (hours.day && hours.open && hours.close && hours.open > hours.close) {
+        unusualHours = hours;
+      } else {
+        unusualHours = null;
+      }
+    }
+    return statusObj;
+  }
+
+  /**
+   * @param {string} day
+   */
+  function getPreviousDay(day) {
+    const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+    const index = days.indexOf(day.toLowerCase());
+    return days[(index - 1 + days.length) % days.length];
+  }
+
+  function getStatusSelection(accCurrentTime, hours = getDefaultHours()) {
+    const now = new Date();
+    const dayInt = now.getDay();
+    let statusObj = getStatusObj('close');
+
+    if (hours.open) {
+      const open = parseTime(hours.open);
+      const accOpen = 1440 * dayInt + open;
+      if (accCurrentTime < accOpen) {
+        statusObj = getStatusObj('opening', accOpen - accCurrentTime);
+        return statusObj;
+      }
+      if (hours.close) {
+        const close = parseTime(hours.close);
+        let accClose;
+        if (open < close) { // normal schedule
+          accClose = 1440 * dayInt + close;
+          if (accCurrentTime < accClose) {
+            statusObj = getStatusObj('open', accClose - accCurrentTime);
+            return statusObj;
           }
-          if (hours.close) {
-            const close = parseTime(hours.close);
-            let accClose;
-            if (open < close) { // normal schedule
-              accClose = 1440 * dayInt + close;
-              if (accCurrentTime < accClose) {
-                status = bhStatus('open', accClose - accCurrentTime);
-                break;
-              }
-            } else { // unusual schedule
-              unDayInt = (dayInt + 1) % 7;
-              unAccClose = 1440 * unDayInt + close;
-              if (accCurrentTime < unAccClose) {
-                status = bhStatus('open', unAccClose - accCurrentTime);
-                break;
-              }
-            }
+        } else { // unusual schedule
+          const nextDayInt = (dayInt + 1) % 7;
+          const unAccClose = 1440 * nextDayInt + close;
+          if (accCurrentTime < unAccClose) {
+            statusObj = getStatusObj('open', unAccClose - accCurrentTime);
+            return statusObj;
           }
         }
       }
     }
-    return status;
+    return statusObj;
   }
 
-  /** Get day as an integer */
-  function getDayInt(day) {
-    return [
-      'sunday',
-      'monday',
-      'tuesday',
-      'wednesday',
-      'thursday',
-      'friday',
-      'saturday'
-    ].indexOf(day);
+  function getUnusualStatusSelection(accCurrentTime, unusualHours = getDefaultHours()) {
+    const now = new Date();
+    const dayInt = now.getDay();
+    let statusObj = getStatusObj('close');
+
+    if (unusualHours.close) {
+      const close = parseTime(unusualHours.close);
+      const accClose = 1440 * dayInt + close;
+      if (accClose > accCurrentTime) {
+        statusObj = getStatusObj('closing', accClose - accCurrentTime);
+        return statusObj;
+      }
+    }
+    return statusObj;
   }
 
   /**
@@ -229,14 +254,22 @@
     return hours * 60 + minutes;
   }
 
+  function getDefaultHours() {
+    return {
+      day: '',
+      open: '',
+      close: ''
+    }
+  }
+
   /** Get restaurant business hours status object. */
-  function bhStatus(type, timeLeft = 31) {
+  function getStatusObj(type, timeLeft = 31) {
     switch (type) {
       case 'opening':
         if (timeLeft > 30) { break; }
         if (0 < timeLeft && timeLeft <= 30) {
           return {
-            status: `opening in ${timeLeft}`,
+            status: `opening in ${timeLeft} minute(s)`,
             className: 'status themed-bh-status-opening'
           };
         }
@@ -262,6 +295,39 @@
       className: 'status themed-bh-status-closed'
     };
   }
+
+  // function getHeightOffset() {
+  //   return 44 + getNavbarCollapseHeight() + getWpAdminbarHeight();
+  // }
+
+  // function getNavbarCollapseHeight() {
+  //   const navbarCollapse = document.getElementById('navbar-collapse');
+  //   if (navbarCollapse && navbarCollapse.classList.contains('show')) {
+  //     return navbarCollapse.clientHeight;
+  //   }
+  //   return 0;
+  // }
+
+  // function getWpAdminbarHeight() {
+  //   const wpadminbar = document.getElementById('wpadminbar');
+  //   return wpadminbar ? wpadminbar.clientHeight : 0;
+  // }
+
+  // function onElementResize(element, callback) {
+  //   const resizeObserver = new ResizeObserver(callback);
+  //   resizeObserver.observe(element);
+  // }
+
+  // document.addEventListener('DOMContentLoaded', function() {
+  //   const wpadminbar = document.getElementById('wpadminbar');
+  //   if (wpadminbar) {
+  //     onElementResize(wpadminbar, () => {
+  //       document.getElementById('main').style.height = `calc(100vh - ${getHeightOffset()}px)`;
+  //       document.getElementsByTagName('body')[0].style.height = `calc(100vh - ${getHeightOffset()}px)`;
+  //       document.getElementsByTagName('html')[0].style.height = `calc(100vh - ${getHeightOffset()}px)`;
+  //     });
+  //   }
+  // });
 
   // Toggle navigation links in mobile view
   document.getElementById('navbar-toggler').addEventListener('click', function() {
