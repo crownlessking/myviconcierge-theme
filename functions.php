@@ -58,9 +58,20 @@ add_action('wp_enqueue_scripts', 'mvic_load_css');
  *****************************************************************************/
 
 function mvic_load_js() {
+
+  // Enqueue Google Maps API
+  if (is_singular(array('restaurant', 'beach', 'accommodation'))) {
+    add_action('wp_head', function() {
+      ?>
+      <script async defer src="https://maps.googleapis.com/maps/api/js?key=<?= esc_attr(get_option('google_maps_api_key', '')) ?>"></script>
+      <?php
+    });
+  }
+
   // Enqueue jQuery from WordPress core
   wp_enqueue_script('jquery');
 
+  // Enqueue main javaScript file
   wp_register_script('main',
     get_template_directory_uri() . '/js/main.js',
     'bootstrap',
@@ -78,6 +89,49 @@ function mvic_load_js() {
   }
 }
 add_action('wp_enqueue_scripts', 'mvic_load_js');
+
+/**
+ * Google map init
+ */
+function mvic_plugin_init_google_maps_script() {
+  if (is_singular(array('restaurant', 'beach', 'accommodation'))) {
+    ?>
+    <script>
+      let locationRef;
+      let mapRef;
+      function initMap() {
+        let location = {lat: 18.3333, lng: -64.9167}; // Coordinates for St. Thomas, U.S. Virgin Islands
+        locationRef = location;
+        var map = new google.maps.Map(document.getElementById('mvic-map-canvas'), {
+          zoom: 14,
+          center: location,
+          mapTypeControl: false, // Enables the map type control
+          zoomControl: true,    // Enables the zoom control
+          streetViewControl: true, // Enables the Street View control
+          fullscreenControl: false, // Enables the fullscreen control
+          scaleControl: false     // Enables the scale control
+        });
+        mapRef = map;
+        var marker = new google.maps.Marker({
+          position: location,
+          map: map
+        });
+      }
+
+      let mapInitialized = false;
+      document.getElementById('close-button').addEventListener('click', function() {
+        if (!mapInitialized) {
+          initMap(); // Initialize the map
+          mapInitialized = true;
+        } else {
+          mapRef.setCenter(locationRef); // Center the map on the location
+        }
+      });
+    </script>
+    <?php
+  }
+}
+add_action('wp_footer', 'mvic_plugin_init_google_maps_script');
 
 // Enables the use of custom logo.
 function mvic_setup() {

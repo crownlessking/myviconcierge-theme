@@ -71,7 +71,8 @@
 }
 
 html, body {
-  height: 100%;
+  overflow: hidden;
+  height: 100vh;
 }
 
 body {
@@ -102,11 +103,15 @@ footer {
  Legacy CSS
  *****************************************************************************/
 
-.articulated {
+.mvic-map-canvas {
+  height: 100vh; /* calc(100vh - 32px); */
+}
+
+.main-content {
   background-image: url("../images/transback.png");
   border-radius: 15px;
-  max-height: calc(100vh - 50px);
-  padding: .5rem .5rem 3rem .5rem;
+  max-height: calc(100vh - 50px); /* 78px */
+  padding: .5rem .5rem 2rem .5rem;
 }
 
 .content-scrollable {
@@ -236,6 +241,7 @@ footer {
  Theme Color CSS
  ******************************************************************************/
 
+.map-panel-scrollable.light,
 main.light {
   --background-noise: url("../images/bg-light.png");
   --link-color: #1a73e8;
@@ -254,6 +260,7 @@ main.light {
   --bh-status-closing: #e56925;
 }
 
+.map-panel-scrollable.dark,
 main.dark {
   --foreground-color: rgb(229 231 235 / var(--tw-text-opacity, 1));
   --link-color: #b2e1f5;
@@ -376,15 +383,19 @@ p.comment-form-comment label {
   padding: .25rem .5rem;
 }
 
-#main.overlay-active {
+.mvic-map-canvas.overlay-active {
+  height: calc(100vh - 32px);
+}
+
+.main-content.overlay-active {
   max-height: calc(100vh - 82px);
 }
 
-#main.navbar-show {
+.main-content.navbar-show {
   max-height: calc(100vh - 210px);
 }
 
-#main.overlay-active.navbar-show {
+.main-content.overlay-active.navbar-show {
   max-height: calc(100vh - 242px);
 }
 
@@ -394,15 +405,19 @@ body.overlay-active {
 }
 
 @media (max-width: 782px) {
-  #main.overlay-active {
+  .mvic-map-canvas.overlay-active {
+    height: calc(100vh - 46px);
+  }
+
+  .main-content.overlay-active {
     max-height: calc(100vh - 96px);
   }
 
-  #main.navbar-show {
+  .main-content.navbar-show {
     max-height: calc(100vh - 210px);
   }
 
-  #main.overlay-active.navbar-show {
+  .main-content.overlay-active.navbar-show {
     max-height: calc(100vh - 256px);
   }
 

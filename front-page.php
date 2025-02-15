@@ -1,8 +1,8 @@
 <?php get_header('header'); ?>
 
 <!-- Main Content Area -->
-<main class="light">
-  <div id="main" class="container justify-self-center relative flex articulated">
+<main id="main" class="light">
+  <div id="articulated" class="container justify-self-center relative flex main-content">
     <div id="content" class="w-full flex flex-col h-auto">
       <div class="overflow-auto text-gray-200 content-scrollable">
         <h1 class="text-center text-4xl mt-5 mb-20 tracking-wide leading-tight border-b-2 pb-2 font-thin">
@@ -48,7 +48,7 @@
     </div>
     <?php get_template_part('includes/section', 'closebutton'); ?>
   </div>
-  <?php get_template_part('includes/section', 'mappanel'); ?>
 </main>
+<?php get_template_part('includes/section', 'mappanel'); ?>
 
 <?php get_footer(); ?>

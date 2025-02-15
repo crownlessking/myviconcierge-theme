@@ -78,7 +78,14 @@
 
   function mvic_animate_window(a) {
     var b = '-' + jQuery(window).height() + 'px';
-    a ? jQuery('#main').animate({top:'0'},'fast') : jQuery('#main').animate({top:b},'fast',mvic_toggle_panel);
+    if (a) {
+      jQuery('#main').css('display', '');
+    }
+    a ? jQuery('#articulated').animate({top:'0'},'fast')
+      : jQuery('#articulated').animate({top:b},'fast',() => {
+        jQuery('#main').css('display', 'none');
+        mvic_toggle_panel();
+      });
   }
 
   function showContent(a) {
@@ -136,9 +143,9 @@
   openContentLink = document.getElementById('mvic-ui-open-content');
 
   if (btnShowMap) {
-    btnShowMap.onclick = function() {
+    btnShowMap.addEventListener('click', function() {
       showContent(false);
-    }
+    });
   }
 
   if (openContentLink) {
@@ -296,38 +303,8 @@
     };
   }
 
-  // function getHeightOffset() {
-  //   return 44 + getNavbarCollapseHeight() + getWpAdminbarHeight();
-  // }
-
-  // function getNavbarCollapseHeight() {
-  //   const navbarCollapse = document.getElementById('navbar-collapse');
-  //   if (navbarCollapse && navbarCollapse.classList.contains('show')) {
-  //     return navbarCollapse.clientHeight;
-  //   }
-  //   return 0;
-  // }
-
-  // function getWpAdminbarHeight() {
-  //   const wpadminbar = document.getElementById('wpadminbar');
-  //   return wpadminbar ? wpadminbar.clientHeight : 0;
-  // }
-
-  // function onElementResize(element, callback) {
-  //   const resizeObserver = new ResizeObserver(callback);
-  //   resizeObserver.observe(element);
-  // }
-
-  // document.addEventListener('DOMContentLoaded', function() {
-  //   const wpadminbar = document.getElementById('wpadminbar');
-  //   if (wpadminbar) {
-  //     onElementResize(wpadminbar, () => {
-  //       document.getElementById('main').style.height = `calc(100vh - ${getHeightOffset()}px)`;
-  //       document.getElementsByTagName('body')[0].style.height = `calc(100vh - ${getHeightOffset()}px)`;
-  //       document.getElementsByTagName('html')[0].style.height = `calc(100vh - ${getHeightOffset()}px)`;
-  //     });
-  //   }
-  // });
+  let navigationHeight = 0;
+  let wpadminbarHeight = 0;
 
   // Toggle navigation links in mobile view
   document.getElementById('navbar-toggler').addEventListener('click', function() {
@@ -344,28 +321,58 @@
 
       collapse.classList.add('show');
       main.classList.add(toggledClass);
+
+      setTimeout(adjustArticulatedMaxHeights, 100);
     } else {
       collapse.classList.remove('show');
       // Wait for the transition to complete before adding the hidden class
       collapse.addEventListener('transitionend', function() {
         collapse.classList.add('hidden');
         main.classList.remove(toggledClass);
+
+        restoreArticulatedMaxHeights();
       }, { once: true });
     }
   });
 
+  function adjustArticulatedMaxHeights() {
+    const wpadminbar = document.getElementById('wpadminbar');
+    const wpadminbarHeight = wpadminbar ? wpadminbar.clientHeight : 0;
+    const articulated = document.getElementById('articulated');
+    const navbarCollapse = document.getElementById('navbar-collapse');
+    const navbarCollapseHeight = navbarCollapse ? navbarCollapse.clientHeight : 0;
+    const heightOffset = 50 + wpadminbarHeight + navbarCollapseHeight;
+    articulated.style.maxHeight = `calc(100vh - ${heightOffset}px)`;
+  }
+
+  function restoreArticulatedMaxHeights() {
+    const articulated = document.getElementById('articulated');
+    articulated.style.maxHeight = '';
+  }
+
   // Prevents website layout from breaking if the wordpress admin bar is displayed.
   document.addEventListener('DOMContentLoaded', function() {
-    if (document.getElementById('wpadminbar')) { // if admin bar visible
+    const wpadminbar = document.getElementById('wpadminbar');
+    const navigation = document.getElementById('navigation');
+    if (wpadminbar) { // if admin bar visible
       // Trigger your JavaScript functions here
-      document.getElementById('main').classList.add('overlay-active');
-      document.getElementsByTagName('body')[0].classList.add('overlay-active');
-      document.getElementsByTagName('html')[0].classList.add('overlay-active');
+      wpadminbarHeight = wpadminbar.clientHeight;
+      if (navigation) {
+        navigationHeight = navigation ? navigation.clientHeight : 0;
+      } else {
+        console.error('ERROR: Element wiht "navigation" as ID is missing!');
+      }
+      document.getElementById('articulated').classList.add('overlay-active');
+      document.getElementById('mvic-map-canvas').classList.add('overlay-active');
+      // document.getElementsByTagName('body')[0].classList.add('overlay-active');
+      // document.getElementsByTagName('html')[0].classList.add('overlay-active');
     } else {
-      console.log('Admin bar is not visible');
-      document.getElementById('main').classList.remove('overlay-active');
-      document.getElementsByTagName('body')[0].classList.remove('overlay-active');
-      document.getElementsByTagName('html')[0].classList.remove('overlay-active');
+      console.log('Element with "wpadminbar" as ID is missing.');
+      wpadminbarHeight = 0;
+      document.getElementById('articulated').classList.remove('overlay-active');
+      document.getElementById('mvic-map-canvas').classList.remove('overlay-active');
+      // document.getElementsByTagName('body')[0].classList.remove('overlay-active');
+      // document.getElementsByTagName('html')[0].classList.remove('overlay-active');
     }
   });
 

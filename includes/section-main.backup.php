@@ -1,4 +1,4 @@
-<div id="main" class="container justify-self-center relative flex articulated">
+<div id="articulated" class="container justify-self-center relative flex main-content">
   <div id="content" class="w-full flex flex-col h-auto">
     <div class="overflow-auto text-gray-200 content-scrollable">
       <h1 class="text-center text-4xl mt-5 mb-20 tracking-wide leading-tight border-b-2 pb-2 font-thin">
