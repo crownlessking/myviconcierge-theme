@@ -4,12 +4,13 @@
  */
 ?>
 <?php
-$post_type = get_post_type();
 $button_text = 'Close';
+// $post_type = get_post_type();
+// $show_map = get_post_meta(get_the_ID(), '_mvic_show_map', true);
 
-if (in_array($post_type, ['restaurant', 'beach', 'accommodation'])) {
-  $button_text = 'Show on map';
-}
+// if ($show_map && in_array($post_type, ['restaurant', 'beach', 'accommodation'])) {
+//   $button_text = 'Show on map';
+// }
 ?>
 
 <div id="mvic-close-button-wrapper" class="absolute inset-x-0 mx-auto w-36 h-6 bottom-[.277rem]">

@@ -500,9 +500,6 @@ video {
 .top-\[4rem\] {
   top: 4rem;
 }
-.z-\[-50\] {
-  z-index: -50;
-}
 .clear-both {
   clear: both;
 }
@@ -749,6 +746,9 @@ video {
 }
 .not-italic {
   font-style: normal;
+}
+.leading-loose {
+  line-height: 2;
 }
 .leading-tight {
   line-height: 1.25;

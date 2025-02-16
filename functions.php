@@ -19,20 +19,21 @@ function myvic_theme_setup() {
 }
 add_action('after_setup_theme', 'myvic_theme_setup');
 
-function mvic_theme_exclude_front_page_link($items, $args) {
-  // Check if we are on the front page
-  if (is_front_page()) {
-      foreach ($items as $key => $item) {
-          // Check if the current menu item is the front-page link
-          if ($item->url == home_url('/')) {
-              // Remove the front-page link
-              unset($items[$key]);
-          }
-      }
+function mvic_theme_exclude_current_page_link($items, $args) {
+  // Get the current page URL
+  $current_url = home_url(add_query_arg(array(), $_SERVER['REQUEST_URI']));
+
+  foreach ($items as $key => $item) {
+    // Check if the current menu item URL matches the current page URL
+    if ($item->url == $current_url) {
+      // Remove the current page link
+      unset($items[$key]);
+    }
   }
+
   return $items;
 }
-add_filter('wp_nav_menu_objects', 'mvic_theme_exclude_front_page_link', 10, 2);
+add_filter('wp_nav_menu_objects', 'mvic_theme_exclude_current_page_link', 10, 2);
 
 /** **************************************************************************
  * CSS IMPORTS
@@ -104,49 +105,6 @@ function mvic_load_js() {
   }
 }
 add_action('wp_enqueue_scripts', 'mvic_load_js');
-
-/**
- * Google map init
- */
-function mvic_theme_init_google_maps_script() {
-  if (is_singular(array('restaurant', 'beach', 'accommodation'))) {
-    ?>
-    <script>
-      let locationRef;
-      let mapRef;
-      function initMap() {
-        let location = {lat: 18.3333, lng: -64.9167}; // Coordinates for St. Thomas, U.S. Virgin Islands
-        locationRef = location;
-        var map = new google.maps.Map(document.getElementById('mvic-map-canvas'), {
-          zoom: 14,
-          center: location,
-          mapTypeControl: false, // Enables the map type control
-          zoomControl: true,    // Enables the zoom control
-          streetViewControl: true, // Enables the Street View control
-          fullscreenControl: false, // Enables the fullscreen control
-          scaleControl: false     // Enables the scale control
-        });
-        mapRef = map;
-        var marker = new google.maps.Marker({
-          position: location,
-          map: map
-        });
-      }
-
-      let mapInitialized = false;
-      document.getElementById('close-button').addEventListener('click', function() {
-        if (!mapInitialized) {
-          initMap(); // Initialize the map
-          mapInitialized = true;
-        } else {
-          mapRef.setCenter(locationRef); // Center the map on the location
-        }
-      });
-    </script>
-    <?php
-  }
-}
-add_action('wp_footer', 'mvic_theme_init_google_maps_script');
 
 // Enables the use of custom logo.
 function mvic_setup() {

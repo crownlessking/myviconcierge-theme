@@ -376,15 +376,11 @@
       }
       document.getElementById('articulated').classList.add('overlay-active');
       document.getElementById('mvic-map-canvas').classList.add('overlay-active');
-      // document.getElementsByTagName('body')[0].classList.add('overlay-active');
-      // document.getElementsByTagName('html')[0].classList.add('overlay-active');
     } else {
       console.log('Element with "wpadminbar" as ID is missing.');
       wpadminbarHeight = 0;
       document.getElementById('articulated').classList.remove('overlay-active');
       document.getElementById('mvic-map-canvas').classList.remove('overlay-active');
-      // document.getElementsByTagName('body')[0].classList.remove('overlay-active');
-      // document.getElementsByTagName('html')[0].classList.remove('overlay-active');
     }
   });
 
@@ -397,6 +393,61 @@
       statusElement.className = statusObj.className;
     } else {
       console.error('businessHours is not defined');
+    }
+  });
+
+  document.addEventListener('DOMContentLoaded', function() {
+    if (typeof mapData !== 'undefined' && mapData.showMap === '1') {
+      btnShowMap.textContent = 'Show on map';
+
+      function getLocation(mapData) {
+        if (mapData.latitude && mapData.longitude) {
+          return { lat: +mapData.latitude, lng: +mapData.longitude };
+        }
+        switch (mapData.location) {
+          case 'st-john': // Coordinates for St. John, U.S. Virgin Islands
+            return { lat: 18.3333, lng: -64.7333 };
+          case 'st-croix': // Coordinates for St. Croix, U.S. Virgin Islands
+            return { lat: 17.7275, lng: -64.7470 };
+          default:
+          case 'st-thomas': // Coordinates for St. Thomas, U.S. Virgin Islands
+            return { lat: 18.3333, lng: -64.9167 };
+        }
+      }
+
+      let locationRef;
+      let mapRef;
+      function initMap() {
+        let location = getLocation(mapData);
+        locationRef = location;
+        var map = new google.maps.Map(document.getElementById('mvic-map-canvas'), {
+          zoom: 14,
+          center: location,
+          mapTypeControl: false, // Enables the map type control
+          zoomControl: true,    // Enables the zoom control
+          streetViewControl: true, // Enables the Street View control
+          fullscreenControl: false, // Enables the fullscreen control
+          scaleControl: false     // Enables the scale control
+        });
+        mapRef = map;
+        var marker = new google.maps.Marker({
+          position: location,
+          map: map,
+          icon: mapData.iconUrl
+        });
+      }
+
+      let mapInitialized = false;
+      btnShowMap.addEventListener('click', function() {
+        if (!mapInitialized) {
+          initMap(); // Initialize the map
+          mapInitialized = true;
+        } else {
+          mapRef.setCenter(locationRef); // Center the map on the location
+        }
+      });
+    } else {
+      console.error('mapData is not defined');
     }
   });
 
