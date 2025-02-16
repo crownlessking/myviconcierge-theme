@@ -164,93 +164,105 @@
    * Get restaurant business hours status.
    */
   function getRestaurantBusinessHoursStatus(businessHours = []) {
-    const now = new Date();
-    const currentDay = now.toLocaleString('en-US', { weekday: 'long' });
-    const currentTime = now.getHours() * 60 + now.getMinutes();
-    const accCurrentTime = 1440 * now.getDay() + currentTime;
-    let unusualHours = null;
-    let statusObj = getStatusObj('close');
+    const days = {
+      'sunday': 0,
+      'monday': 1,
+      'tuesday': 2,
+      'wednesday': 3,
+      'thursday': 4,
+      'friday': 5,
+      'saturday': 6
+    };
+    const timestamps = [];
 
     for (let i = 0; i < businessHours.length; i++) {
       const hours = businessHours[i];
+      const dayInt = days[hours.day];
 
-      if (hours.day === currentDay.toLowerCase()) {
-        if (unusualHours && unusualHours.day === getPreviousDay(hours.day)) {
-          statusObj = getUnusualStatusSelection(accCurrentTime, unusualHours);
-          break;
-        } else {
-          statusObj = getStatusSelection(accCurrentTime, hours);
-          break;
-        }
+      if (!hours.open && !hours.close) {
+        timestamps.push(`${dayInt}0`);
+        timestamps.push(`${dayInt}0`);
+        continue;
       }
 
-      // Store current hours if they are unusual.
-      if (hours.day && hours.open && hours.close && hours.open > hours.close) {
-        unusualHours = hours;
+      const day = days[hours.day];
+      const open = hours.open ? parseTime(hours.open) : 0;
+      const close = hours.close ? parseTime(hours.close) : 0;
+
+      if (open) {
+        timestamps.push(`${day}${1440 * days[hours.day] + open}`);
       } else {
-        unusualHours = null;
+        timestamps.push(`${day}${1440 * days[hours.day] + 0}`);
+      }
+
+      if (0 < close && close < open) { // Closes passed 12am on the next day.
+        const nextDayInt = (days[hours.day] + 1) % 7;
+        timestamps.push(`${day}${1440 * nextDayInt + close}`);
+      } else if (close) {
+        timestamps.push(`${day}${1440 * days[hours.day] + close}`);
+      } else {
+        timestamps.push(`${day}${1440 * days[hours.day] + 1439}`);
       }
     }
-    return statusObj;
+
+    const now = new Date();
+    const currentTime = now.getHours() * 60 + now.getMinutes();
+    const accCurrentTime = 1440 * now.getDay() + currentTime;
+    const currentDayInt = now.getDay();
+    let status = getStatusObj('close');
+
+    for (let j = 0; j < timestamps.length; j+=2) {
+      const dayInt = +timestamps[j].substring(0, 1);
+
+      if (dayInt < currentDayInt) {
+        continue;
+      }
+      if (dayInt > currentDayInt) {
+        break;
+      }
+      const accPreviousDayClose = getPreviousDayClosingTime(businessHours, currentDayInt);
+      if (accCurrentTime < accPreviousDayClose) {
+        status = getStatusObj('open', accPreviousDayClose - accCurrentTime);
+      }
+      const accOpen = +timestamps[j].substring(1);
+      const accClose = +timestamps[j + 1].substring(1);
+
+      if ((accOpen === 0 && 0 === accClose) || (accCurrentTime >= accClose)) {
+        status = getStatusObj('close');
+      } else if (accCurrentTime < accOpen) {
+        status = getStatusObj('opening', accOpen - accCurrentTime);
+      } else {
+        status = getStatusObj('open', accClose - accCurrentTime);
+      }
+    }
+
+    return status;
   }
 
   /**
-   * @param {string} day
+   * Get the previous day closing time.
    */
-  function getPreviousDay(day) {
-    const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
-    const index = days.indexOf(day.toLowerCase());
-    return days[(index - 1 + days.length) % days.length];
-  }
-
-  function getStatusSelection(accCurrentTime, hours = getDefaultHours()) {
-    const now = new Date();
-    const dayInt = now.getDay();
-    let statusObj = getStatusObj('close');
-
-    if (hours.open) {
-      const open = parseTime(hours.open);
-      const accOpen = 1440 * dayInt + open;
-      if (accCurrentTime < accOpen) {
-        statusObj = getStatusObj('opening', accOpen - accCurrentTime);
-        return statusObj;
-      }
-      if (hours.close) {
-        const close = parseTime(hours.close);
-        let accClose;
-        if (open < close) { // normal schedule
-          accClose = 1440 * dayInt + close;
-          if (accCurrentTime < accClose) {
-            statusObj = getStatusObj('open', accClose - accCurrentTime);
-            return statusObj;
-          }
-        } else { // unusual schedule
-          const nextDayInt = (dayInt + 1) % 7;
-          const unAccClose = 1440 * nextDayInt + close;
-          if (accCurrentTime < unAccClose) {
-            statusObj = getStatusObj('open', unAccClose - accCurrentTime);
-            return statusObj;
-          }
-        }
-      }
+  function getPreviousDayClosingTime(businessHours = [], currentDay) {
+    const days = {
+      'sunday': 0,
+      'monday': 1,
+      'tuesday': 2,
+      'wednesday': 3,
+      'thursday': 4,
+      'friday': 5,
+      'saturday': 6
+    };
+    const previousDayInt = (currentDay - 1 + 7) % 7;
+    let previousDayHours = businessHours.find(hours => days[hours.day] === previousDayInt);
+    if (!previousDayHours) {
+      return 0;
     }
-    return statusObj;
-  }
-
-  function getUnusualStatusSelection(accCurrentTime, unusualHours = getDefaultHours()) {
-    const now = new Date();
-    const dayInt = now.getDay();
-    let statusObj = getStatusObj('close');
-
-    if (unusualHours.close) {
-      const close = parseTime(unusualHours.close);
-      const accClose = 1440 * dayInt + close;
-      if (accClose > accCurrentTime) {
-        statusObj = getStatusObj('closing', accClose - accCurrentTime);
-        return statusObj;
-      }
+    const close = previousDayHours.close ? parseTime(previousDayHours.close) : 0;
+    const open = previousDayHours.open ? parseTime(previousDayHours.open) : 0;
+    if (close && close < open) {
+      return close + 1440 * previousDayInt;
     }
-    return statusObj;
+    return 0;
   }
 
   /**
