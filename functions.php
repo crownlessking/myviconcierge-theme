@@ -19,6 +19,21 @@ function myvic_theme_setup() {
 }
 add_action('after_setup_theme', 'myvic_theme_setup');
 
+function mvic_theme_exclude_front_page_link($items, $args) {
+  // Check if we are on the front page
+  if (is_front_page()) {
+      foreach ($items as $key => $item) {
+          // Check if the current menu item is the front-page link
+          if ($item->url == home_url('/')) {
+              // Remove the front-page link
+              unset($items[$key]);
+          }
+      }
+  }
+  return $items;
+}
+add_filter('wp_nav_menu_objects', 'mvic_theme_exclude_front_page_link', 10, 2);
+
 /** **************************************************************************
  * CSS IMPORTS
  *************************************************************************** */
@@ -93,7 +108,7 @@ add_action('wp_enqueue_scripts', 'mvic_load_js');
 /**
  * Google map init
  */
-function mvic_plugin_init_google_maps_script() {
+function mvic_theme_init_google_maps_script() {
   if (is_singular(array('restaurant', 'beach', 'accommodation'))) {
     ?>
     <script>
@@ -131,7 +146,7 @@ function mvic_plugin_init_google_maps_script() {
     <?php
   }
 }
-add_action('wp_footer', 'mvic_plugin_init_google_maps_script');
+add_action('wp_footer', 'mvic_theme_init_google_maps_script');
 
 // Enables the use of custom logo.
 function mvic_setup() {
@@ -203,12 +218,12 @@ function mvic_theme_settings_callback() {
 }
 
 // Hook into the admin_init action
-add_action('admin_init', 'mvic_plugin_theme_settings_init');
+add_action('admin_init', 'mvic_theme_settings_init');
 
 /**
  * Function to hook into the admin_init action.
  */
-function mvic_plugin_theme_settings_init() {
+function mvic_theme_settings_init() {
   // Register background image setting
   register_setting('mvic_theme_settings_group', 'background_image_urls');
 
@@ -221,7 +236,7 @@ function mvic_plugin_theme_settings_init() {
   add_settings_section(
     'mvic_theme_settings_section',  // Section ID
     'Theme Options',           // Section title
-    'mvic_plugin_theme_settings_section_callback', // Callback function
+    'mvic_theme_settings_section_callback', // Callback function
     'mvic-theme-settings'           // Page slug
   );
 
@@ -238,13 +253,13 @@ function mvic_plugin_theme_settings_init() {
   add_settings_field(
     'google_maps_api_key',
     'Google Maps API Key',
-    'mvic_plugin_google_maps_api_key_callback',
+    'mvic_theme_google_maps_api_key_callback',
     'mvic-theme-settings',
     'mvic_theme_settings_section'
   );
 }
 
-function mvic_plugin_theme_settings_section_callback() {
+function mvic_theme_settings_section_callback() {
   echo '<p>Customize your theme settings here.</p>';
 }
 
@@ -255,7 +270,7 @@ function mvic_background_image_urls_callback() {
 }
 
 /** Callback function to render the Google Maps API key input field. */
-function mvic_plugin_google_maps_api_key_callback() {
+function mvic_theme_google_maps_api_key_callback() {
   $api_key = get_option('google_maps_api_key', '');
   echo '<input type="text" name="google_maps_api_key" value="' . esc_attr($api_key) . '" class="regular-text">';
 }
