@@ -35,6 +35,48 @@ function mvic_theme_exclude_current_page_link($items, $args) {
 }
 add_filter('wp_nav_menu_objects', 'mvic_theme_exclude_current_page_link', 10, 2);
 
+function mvic_theme_customize_nav_menu_items($items, $args) {
+  // Check if we are on the front page
+  if (is_front_page()) {
+    // Specify the URLs of the links you want to exclude
+    $excluded_urls = array(
+      home_url('/virgin-islands-restaurants/'), // Replace with your actual URL
+      home_url('/virgin-islands-beaches/'),     // Replace with your actual URL
+      home_url('/virgin-islands-hotels-resorts/') // Replace with your actual URL
+    );
+    
+    // Specify the URLs of the links you want to always include
+    $included_urls = array(
+      array(
+        'title' => 'About',
+        'url' => home_url('/about/'),    // Replace with your actual URL
+      ),
+      array(
+        'title' => 'Contact',
+        'url' => home_url('/contact/')      // Replace with your actual URL
+      )
+    );
+
+    foreach ($items as $key => $item) {
+      // Check if the current menu item URL is in the excluded URLs array
+      if (in_array($item->url, $excluded_urls)) {
+        // Remove the link
+        unset($items[$key]);
+      }
+    }
+
+    // Add the always included links
+    foreach ($included_urls as $included_url) {
+      $items[] = (object) array(
+        'title' => $included_url['title'], // Replace with the link title
+        'url' => $included_url['url']
+      );
+    }
+  }
+  return $items;
+}
+add_filter('wp_nav_menu_objects', 'mvic_theme_customize_nav_menu_items', 10, 2);
+
 /** **************************************************************************
  * CSS IMPORTS
  *************************************************************************** */

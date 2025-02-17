@@ -18,12 +18,15 @@ Template Name: Beaches
         <div class="max-w-[1000px] mx-auto mb-20">
           <div class="flex items-center justify-center">
             <div class="flex flex-col h-full md:flex-row space-y-4 md:space-x-4 md:space-y-0">
-              <aside class="profile flex-grow">
-                <?php if ( is_active_sidebar( 'primary-sidebar' ) ) : ?>
-                  <?php dynamic_sidebar( 'primary-sidebar' ); ?>
-                <?php endif; ?>
-              </aside><!-- .entry-sidebar -->
-          
+
+              <?php if ( is_active_sidebar( 'primary-sidebar' ) ) : ?>
+                <aside class="profile flex-grow">
+                  <?php if ( is_active_sidebar( 'primary-sidebar' ) ) : ?>
+                    <?php dynamic_sidebar( 'primary-sidebar' ); ?>
+                  <?php endif; ?>
+                </aside><!-- .entry-sidebar -->
+              <?php endif; ?>
+
               <div class="article-text">
                 <?php
                 // Fetch all beaches

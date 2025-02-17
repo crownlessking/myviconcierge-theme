@@ -17,6 +17,7 @@ while ( have_posts() ) :
 
     <div class="flex items-center justify-center">
       <div class="flex flex-col h-full md:flex-row space-y-4 md:space-x-4 md:space-y-0">
+
         <aside class="profile flex-grow">
           <?php get_template_part('includes/section', 'map_icon'); ?>
           <?php get_template_part('includes/section', 'accommodation_profile'); ?>
