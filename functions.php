@@ -292,9 +292,9 @@ add_action('wp_ajax_nopriv_mvic_get_random_background_image', 'mvic_get_random_b
 
 /** Add custom class to `post_class()` output */
 function add_custom_post_class($classes) {
-    if (is_single()) {
-        $classes[] = 'relative';
-        $classes[] = 'prose';
+    if (is_single() || is_front_page()) {
+      $classes[] = 'relative';
+      $classes[] = 'prose';
     }
     return $classes;
 }
